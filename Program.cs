@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.Configure<AppConfig>(builder.Configuration.GetSection("AppDetails"));
+builder.Services.Configure<AppConfig>(builder.Configuration.GetSection(nameof(AppConfig)));
 
 if (builder.Configuration["UseSqlite"] == "true")
 	builder.Services.AddDbContext<AppDbContext>(opts => opts.UseSqlite("Data Source=app.db"));
