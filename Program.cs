@@ -1,3 +1,4 @@
+using Hackathon;
 using Hackathon.DAL;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -6,11 +7,15 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.Configure<AppConfig>(builder.Configuration.GetSection("AppDetails"));
 
 if (builder.Configuration["UseSqlite"] == "true")
 	builder.Services.AddDbContext<AppDbContext>(opts => opts.UseSqlite("Data Source=app.db"));
 else
-	builder.Services.AddDbContext<AppDbContext>(opts => opts.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+	var connection = builder.Configuration.GetConnectionString("DefaultConnection");
+	builder.Services.AddDbContext<AppDbContext>(opts => opts.UseNpgsql(connection));
+}
 
 if (!builder.Environment.IsProduction())
 {
@@ -32,6 +37,7 @@ app.UseStaticFiles();
 app.UseRouting();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+
 app.MapGet(builder.Configuration["Urls:ApiRelative"], () => "Hello World!");
 
 if (app.Environment.IsDevelopment())
