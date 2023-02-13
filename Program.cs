@@ -3,6 +3,7 @@ using Hackathon.DAL;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
@@ -32,18 +33,20 @@ if (!app.Environment.IsDevelopment())
 	app.UseHsts();
 }
 
+var config = app.Services.GetRequiredService<IOptions<AppConfig>>().Value;
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
-app.MapGet(builder.Configuration["Urls:ApiRelative"], () => "Hello World!");
+app.MapGet(config.Urls.ApiRelative, () => "Hello World!");
 
 if (app.Environment.IsDevelopment())
 {
 	app.MapDefaultControllerRoute(); // this is needed for CoreAdmin to work
-	app.UseCoreAdminCustomUrl("admin");
+	app.UseCoreAdminCustomUrl(config.Urls.AdminRelative);
 	app.UseSwagger();
 	app.UseSwaggerUI();
 }
