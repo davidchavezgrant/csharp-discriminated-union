@@ -1,11 +1,13 @@
+using Hackathon.DAL;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddCoreAdmin();
-
+builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite("Data Source=app.db"));
+builder.Services.AddCoreAdmin(); // this line must come AFTER DbContext registration
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -15,12 +17,10 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
-app.MapDefaultControllerRoute();
+app.UseCoreAdminCustomUrl("admin");
+app.MapDefaultControllerRoute(); // this is needed for CoreAdmin to work
 app.Run();
