@@ -12,7 +12,13 @@ if (builder.Configuration["UseSqlite"] == "true")
 else
 	builder.Services.AddDbContext<AppDbContext>(opts => opts.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddCoreAdmin(); // this line must come AFTER DbContext registration
+if (!builder.Environment.IsProduction())
+{
+	builder.Services.AddEndpointsApiExplorer();
+	builder.Services.AddSwaggerGen();
+	builder.Services.AddCoreAdmin(); // this line must come AFTER DbContext registration
+}
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -26,6 +32,14 @@ app.UseStaticFiles();
 app.UseRouting();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
-app.UseCoreAdminCustomUrl("admin");
-app.MapDefaultControllerRoute(); // this is needed for CoreAdmin to work
+app.MapGet(builder.Configuration["Urls:ApiRelative"], () => "Hello World!");
+
+if (app.Environment.IsDevelopment())
+{
+	app.MapDefaultControllerRoute(); // this is needed for CoreAdmin to work
+	app.UseCoreAdminCustomUrl("admin");
+	app.UseSwagger();
+	app.UseSwaggerUI();
+}
+
 app.Run();
