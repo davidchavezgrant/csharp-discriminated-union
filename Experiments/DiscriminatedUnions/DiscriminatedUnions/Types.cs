@@ -25,6 +25,8 @@ public class Enumeration<TEnum>: IEquatable<Enumeration<TEnum>> where TEnum: Enu
 		return this.GetType() == other.GetType() && this.Value == other.Value;
 	}
 
+	public bool CanBe(TEnum value) => (this.Value & value.Value) == value.Value;
+
 	private static Dictionary<int, TEnum> CreateEnumerations()
 	{
 		var enumType = typeof(TEnum);
@@ -46,23 +48,10 @@ public class Enumeration<TEnum>: IEquatable<Enumeration<TEnum>> where TEnum: Enu
 	/// <inheritdoc/>
 	public override int GetHashCode() => this.Value.GetHashCode();
 
-	public static TEnum operator |(Enumeration<TEnum> left, Enumeration<TEnum> right)
-	{
-		var newName  = $"({left.Name}) or ({right.Name})";
-		int newValue = left.Value | right.Value;
-		var cons     = typeof(TEnum).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance);
-		var onj = cons[0]
-					  .Invoke(new object[]
-					  {
-						  newValue,
-						  newName
-					  }) as TEnum;
-		return onj;
-	}
-	
 	public static TEnum operator &(Enumeration<TEnum> left, Enumeration<TEnum> right)
 	{
 		var newName  = $"({left.Name}) and ({right.Name})";
+		if (left.Value == right.Value) newName = left.Name;
 		int newValue = left.Value & right.Value;
 		var cons     = typeof(TEnum).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance);
 		var onj = cons[0]
@@ -72,6 +61,20 @@ public class Enumeration<TEnum>: IEquatable<Enumeration<TEnum>> where TEnum: Enu
 						  newName
 					  }) as TEnum;
 		return onj;
+	}
+
+	public static TEnum operator |(Enumeration<TEnum> left, Enumeration<TEnum> right)
+	{
+		var newName     = $"({left.Name}) or ({right.Name})";
+		int newValue    = left.Value | right.Value;
+		var constructor = typeof(TEnum).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance);
+		var newInstance = constructor[0]
+							  .Invoke(new object[]
+							  {
+								  newValue,
+								  newName
+							  }) as TEnum;
+		return newInstance;
 	}
 
 	public override string ToString() => this.Name;
